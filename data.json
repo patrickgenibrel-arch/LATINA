@@ -1,0 +1,14 @@
+[
+  {
+    "appartement_id": "A101",
+    "nom_proprietaire": "Jean Dupont",
+    "numero_lot": "LOT-123",
+    "surface": "85m²"
+  },
+  {
+    "appartement_id": "A102",
+    "nom_proprietaire": "Marie Curie",
+    "numero_lot": "LOT-456",
+    "surface": "70m²"
+  }
+]

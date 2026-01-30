@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Immeuble 3D</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #info { 
+      position: absolute; 
+      top: 20px; 
+      left: 20px; 
+      background: white; 
+      padding: 10px; 
+      display: none;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div id="info"></div>
+  <!-- Chargement de Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // --- Étape 1 : Initialiser la scène ---
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// --- Étape 2 : Charger les données JSON ---
+let appartementsData = [];
+fetch('data.json')
+  .then(response => response.json())
+  .then(data => {
+    appartementsData = data;
+    creerImmeuble();
+  });
+
+// --- Étape 3 : Générer l'immeuble (ex. 3 étages x 2 appartements) ---
+function creerImmeuble() {
+  const etages = 3;
+  const parEtage = 2;
+  const tailleAppart = 5;
+
+  for (let etage = 0; etage < etages; etage++) {
+    for (let i = 0; i < parEtage; i++) {
+      // Créer un cube par appartement
+      const geometry = new THREE.BoxGeometry(tailleAppart, tailleAppart, tailleAppart);
+      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+      const appart = new THREE.Mesh(geometry, material);
+      
+      // Positionner l'appartement
+      appart.position.x = (i - parEtage / 2 + 0.5) * tailleAppart * 1.2;
+      appart.position.y = etage * tailleAppart * 1.2;
+      appart.position.z = 0;
+      
+      // Assigner un ID (ex: "A101", "A102"...)
+      appart.userData.id = `A${(etage + 1)}${i + 1}`;
+      
+      scene.add(appart);
+    }
+  }
+
+  // Caméra position
+  camera.position.z = 20;
+}
+
+// --- Étape 4 : Gestion des clics ---
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener('click', (event) => {
+  // Convertir position de la souris en coordonnées normalisées
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  // Lancer un rayon depuis la caméra
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(scene.children);
+
+  // Si un appartement est cliqué
+  if (intersects.length > 0) {
+    const clickedAppart = intersects[0].object;
+    const appartData = appartementsData.find(a => a.appartement_id === clickedAppart.userData.id);
+    
+    if (appartData) {
+      // Afficher les infos
+      document.getElementById('info').style.display = 'block';
+      document.getElementById('info').innerHTML = `
+        <strong>${appartData.appartement_id}</strong><br>
+        Propriétaire : ${appartData.nom_proprietaire}<br>
+        Lot : ${appartData.numero_lot}<br>
+        Surface : ${appartData.surface}
+      `;
+    }
+  }
+});
+
+// --- Étape 5 : Animation ---
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
+
+  </script>
+</body>
+</html>
