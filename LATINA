@@ -27,7 +27,7 @@ document.body.appendChild(renderer.domElement);
 
 // --- Étape 2 : Charger les données JSON ---
 let appartementsData = [];
-fetch('data.json')
+fetch('Feuille 2.json')
   .then(response => response.json())
   .then(data => {
     appartementsData = data;
